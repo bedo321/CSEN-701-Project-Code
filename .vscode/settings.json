@@ -3,6 +3,7 @@
         "stdlib.h": "c",
         "math.h": "c",
         "pwm.h": "c",
-        "adc.h": "c"
+        "adc.h": "c",
+        "string.h": "c"
     }
 }

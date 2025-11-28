@@ -11,9 +11,9 @@
 
 // --- PWM OUTPUT CONFIGURATION (High-Intensity LEDs) ---
 // Use GPIO pins that support PWM for the LEDs.
-#define LED_R_GPIO_PIN 10
-#define LED_G_GPIO_PIN 11
-#define LED_B_GPIO_PIN 12
+#define LED_R_GPIO_PIN 19
+#define LED_G_GPIO_PIN 20
+#define LED_B_GPIO_PIN 21
 
 // The ADC provides 12-bit resolution (0 to 4095).
 #define ADC_MAX_VALUE 4095

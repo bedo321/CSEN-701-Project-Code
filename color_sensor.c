@@ -83,7 +83,6 @@ void TCS3200_Init(void)
 
     // Default scaling: 20% (good for MCUs)
     TCS3200_SetFrequencyScaling(TCS3200_SCALE_20_PERCENT);
-
     // Default filter: CLEAR (all photodiodes)
     TCS3200_SetFilter(TCS3200_FILTER_CLEAR);
 }
