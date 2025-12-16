@@ -43,14 +43,6 @@ target_link_libraries(${PROJECT_NAME}
     hardware_i2c
 )
 
-# Define Wi-Fi Credentials
-target_compile_definitions(${PROJECT_NAME}
-    PRIVATE
-        CYW43_LWIP=1
-        WIFI_SSID="PICO_W_Color_Sensor" 
-        WIFI_PASSWORD="ahmed"
-)
-
 # Enable USB Output
 pico_enable_stdio_usb(${PROJECT_NAME} 1)
 pico_enable_stdio_uart(${PROJECT_NAME} 0)

@@ -2,8 +2,6 @@
 #include <math.h>
 #include "pico/stdlib.h"
 #include "hardware/adc.h"
-
-// Include project modules
 #include "lcd.h"
 #include "button.h"
 #include "potentiometer_led.h"
@@ -11,10 +9,16 @@
 #include "color_sensor.h"
 #include "wifi_server.h"
 
+// --- GEOMETRIC SEQUENCE REWARD ---
+/**
+ * @brief Display geometric sequence reward when success threshold reached
+ * Sequence: 2, 6, 18, 54, X (ratio = 3)
+ */
+
 // --- CONFIGURATION ---
 // Target RGB values (The "Treasure" color)
 #define TARGET_R_HZ 1200
-#define TARGET_G_HZ 950
+#define TARGET_G_HZ 1000
 #define TARGET_B_HZ 1600
 // Max frequency expected (for normalization)
 #define MAX_EXPECTED_HZ 5000.0f
@@ -57,8 +61,8 @@ int main()
     lcd_string("Booting...");
 
     button_init();
-    PotLED_Init(); // Inits ADC and PWM for RGB LEDs
-    Motor_Init();  // Inits H-Bridge
+    PotLED_Init();
+    Motor_Init();
     TCS3200_Init();
 
     // 2. Initialize Wi-Fi (AP Mode)
@@ -84,48 +88,52 @@ int main()
     uint32_t sensor_r = 0, sensor_g = 0, sensor_b = 0;
     uint16_t pot_r = 0, pot_g = 0, pot_b = 0;
     float correctness = 0.0f;
+    bool success_reward_shown = false;
 
     while (true)
     {
-        // --- A. POLL WI-FI ---
+        // Poll WiFi
         wifi_poll();
 
-        // --- B. READ POTENTIOMETERS & UPDATE LEDS ---
-        // This allows the user to mix the color using the dials
+        // Read potentiometers and update LEDs
         pot_r = PotLED_UpdateIntensity(POT_R_GPIO_PIN, LED_R_GPIO_PIN);
         pot_g = PotLED_UpdateIntensity(POT_G_GPIO_PIN, LED_G_GPIO_PIN);
         pot_b = PotLED_UpdateIntensity(POT_B_GPIO_PIN, LED_B_GPIO_PIN);
 
-        // --- C. READ COLOR SENSOR ---
-        // Reads the physical result of the mixed LEDs
-        // Gate time 10ms means reading takes ~30-40ms total
+        // Read color sensor
         TCS3200_ReadRGB(10, &sensor_r, &sensor_g, &sensor_b);
 
-        // --- D. CALCULATE MATH ---
+        // Calculate correctness
         correctness = calculate_correctness(sensor_r, sensor_g, sensor_b);
 
-        // --- E. CONTROL MOTOR (The Actuator) ---
-        // Moves motor based on how close we are to the target
+        // Control motor
         Motor_UpdateActuation(correctness);
 
-        // --- F. UPDATE WEB SERVER ---
-        // Send data to connected phones/laptops
+        // Display success message
+        if (correctness >= 97.0f && !success_reward_shown)
+        {
+            success_reward_shown = true;
+            lcd_clear();
+            lcd_string("SUCCESS! Seq:");
+            lcd_set_cursor(1, 0);
+            lcd_string("2,6,18,54,X");
+        }
+
+        // Update web server
         wifi_update_data((uint16_t)sensor_r, (uint16_t)sensor_g, (uint16_t)sensor_b, correctness);
 
-        // --- G. UPDATE LCD (Optional Debug Info) ---
-        // Cycle updates to avoid flickering (every 10 loops ~ 1 sec)
+        // Update LCD
         static int lcd_counter = 0;
-        if (lcd_counter++ > 10)
+        if (lcd_counter++ > 10 && !success_reward_shown)
         {
-            lcd_set_cursor(1, 0); // Bottom row
+            lcd_set_cursor(1, 0);
             char buf[16];
-            // Show correctness percentage
             snprintf(buf, 16, "Acc: %3.1f%%", correctness);
             lcd_string(buf);
             lcd_counter = 0;
         }
 
-        sleep_ms(50); // Small delay for system stability
+        sleep_ms(50);
     }
     return 0;
 }

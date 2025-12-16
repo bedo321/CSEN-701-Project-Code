@@ -10,6 +10,9 @@ void wifi_init_ap(const char *ssid, const char *password);
 // Update the data that gets sent to the web browser
 void wifi_update_data(uint16_t r, uint16_t g, uint16_t b, float correctness);
 
+// Check if success has been locked (>=97%)
+bool wifi_is_success_locked(void);
+
 // Poll function to handle network traffic (call in main loop)
 void wifi_poll(void);
 
